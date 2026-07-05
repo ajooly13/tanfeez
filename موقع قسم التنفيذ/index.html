@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1a2b">
+<title>قسم التنفيذ</title>
+<style>
+:root{
+  --bg:#0c1522; --card:#152439; --card2:#1c3050; --gold:#c9a24b; --gold2:#e2c37a;
+  --txt:#eef2f7; --muted:#8fa3bd; --green:#3ecf8e; --red:#ef6b6b; --line:#263b5c;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:'Segoe UI',Tahoma,Arial,sans-serif; background:
+  radial-gradient(1200px 600px at 85% -10%, #1a2c47 0%, transparent 60%),
+  radial-gradient(900px 500px at 0% 110%, #14233a 0%, transparent 55%), var(--bg);
+  color:var(--txt); min-height:100vh}
+.layout{display:flex; min-height:100vh}
+/* ============ Sidebar ============ */
+.sidebar{width:255px; flex-shrink:0; background:linear-gradient(180deg,#12203630,#0c162650), #101d31; border-left:1px solid var(--line); padding:22px 14px; position:sticky; top:0; height:100vh; overflow-y:auto}
+.sb-brand{display:flex; align-items:center; gap:10px; padding:0 6px 18px; border-bottom:1px solid var(--line); margin-bottom:16px}
+.sb-brand .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#8a6a24);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 14px #c9a24b40}
+.sb-brand b{color:var(--gold2); font-size:17px; display:block}
+.sb-brand small{color:var(--muted); font-size:11px}
+.sb-item{display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; cursor:pointer; color:var(--muted); font-size:14px; margin-bottom:4px; border:1px solid transparent; transition:.2s}
+.sb-item:hover{background:var(--card); color:var(--txt); transform:translateX(-3px)}
+.sb-item.on{background:var(--card2); color:var(--gold2); border-color:var(--line); font-weight:bold}
+.sb-item .n{background:var(--card); border-radius:999px; padding:1px 9px; font-size:11px; margin-right:auto; color:var(--muted)}
+.sb-item.sub{padding-right:28px; font-size:13px}
+.sb-sep{height:1px; background:var(--line); margin:12px 4px}
+.app{flex:1; max-width:1150px; margin:0 auto; padding:26px 34px 90px; width:100%}
+@media(max-width:900px){ .sidebar{display:none} .app{padding:14px 14px 90px} }
+/* ============ Animations ============ */
+@keyframes fadeUp{from{opacity:0; transform:translateY(18px)}to{opacity:1; transform:none}}
+@keyframes popIn{0%{opacity:0; transform:scale(.92)}100%{opacity:1; transform:scale(1)}}
+@keyframes shimmer{0%{background-position:-500px 0}100%{background-position:500px 0}}
+.page{animation:fadeUp .4s ease both}
+.stagger>*{animation:popIn .45s ease both}
+.stagger>*:nth-child(1){animation-delay:.03s}.stagger>*:nth-child(2){animation-delay:.09s}
+.stagger>*:nth-child(3){animation-delay:.15s}.stagger>*:nth-child(4){animation-delay:.21s}
+.stagger>*:nth-child(5){animation-delay:.27s}.stagger>*:nth-child(6){animation-delay:.33s}
+/* ============ Hero ============ */
+.hero{text-align:center; padding:34px 10px 26px}
+.hero .big{font-size:44px}
+.hero h1{font-size:34px; margin:10px 0 6px; background:linear-gradient(90deg,var(--gold2),#fff6dd,var(--gold2)); -webkit-background-clip:text; background-clip:text; color:transparent; background-size:1000px; animation:shimmer 6s linear infinite}
+.hero p{color:var(--muted); margin:0; font-size:14px}
+/* ============ Cards ============ */
+.grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}}
+.big-card{background:linear-gradient(160deg,var(--card),var(--card2)); border:1px solid var(--line); border-radius:18px; padding:28px 16px; cursor:pointer; text-align:center; transition:.22s; position:relative; overflow:hidden}
+.big-card::after{content:""; position:absolute; inset:0; background:linear-gradient(120deg,transparent 30%,#ffffff0d 50%,transparent 70%); transform:translateX(-100%); transition:.5s}
+.big-card:hover{border-color:var(--gold); transform:translateY(-4px); box-shadow:0 10px 30px #00000055}
+.big-card:hover::after{transform:translateX(100%)}
+.big-card:active{transform:scale(.97)}
+.big-card .ic{font-size:44px; margin-bottom:10px}
+.big-card .nm{font-size:17px; font-weight:bold}
+.big-card .cnt{font-size:12px; color:var(--muted); margin-top:6px}
+.big-card.full{grid-column:1/-1}
+.big-card.gold{background:linear-gradient(135deg,#3a2f14,#1c3050); border-color:var(--gold)}
+.badge{position:absolute; top:12px; left:12px; background:var(--gold); color:#1a1405; border-radius:999px; padding:2px 10px; font-size:12px; font-weight:bold}
+/* ============ Common ============ */
+.crumb{display:flex; align-items:center; gap:10px; margin:0 0 18px; font-size:14px; color:var(--muted); flex-wrap:wrap}
+.back-btn{background:var(--card); border:1px solid var(--line); color:var(--gold2); border-radius:10px; padding:8px 16px; font-size:14px; cursor:pointer; font-weight:bold; transition:.2s}
+.back-btn:hover{border-color:var(--gold); transform:translateX(3px)}
+.list-item{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:.2s}
+.list-item:hover{background:var(--card2); border-color:var(--gold); transform:translateX(-4px)}
+.li-top{display:flex; justify-content:space-between; align-items:center; gap:8px}
+.li-title{font-weight:bold; font-size:15px}
+.li-sub{font-size:12px; color:var(--muted); margin-top:6px; display:flex; gap:12px; flex-wrap:wrap}
+.pill{display:inline-block; border-radius:999px; padding:3px 11px; font-size:11px; font-weight:bold}
+.st-new{background:#1f3a5a;color:#7dbcff}.st-run{background:#173a2c;color:#5fe0a5}
+.st-done{background:#26313f;color:#9fb2c8}
+.btn{display:block; width:100%; background:linear-gradient(135deg,var(--gold),#a37f2e); color:#1a1405; border:none; border-radius:12px; padding:14px; font-size:16px; font-weight:bold; cursor:pointer; margin-top:12px; font-family:inherit; transition:.2s}
+.btn:hover{filter:brightness(1.12); box-shadow:0 6px 18px #c9a24b30}
+.btn.sec{background:var(--card); color:var(--gold2); border:1px solid var(--gold)}
+.btn.ghost{background:transparent; color:var(--muted); border:1px dashed var(--line)}
+.btn.danger{background:transparent; color:var(--red); border:1px solid var(--red)}
+.btn-row{display:flex; gap:10px; flex-wrap:wrap}
+.btn-row .btn{flex:1; min-width:180px}
+label{display:block; font-size:13px; color:var(--muted); margin:12px 0 5px}
+input,select,textarea{width:100%; background:#0f1d31; border:1px solid var(--line); color:var(--txt); border-radius:10px; padding:11px 12px; font-size:15px; font-family:inherit; transition:.2s}
+input:focus,select:focus,textarea:focus{outline:none; border-color:var(--gold); box-shadow:0 0 0 3px #c9a24b22}
+textarea{min-height:90px; resize:vertical; line-height:1.9}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+.row4{display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px}
+@media(max-width:700px){.row3,.row4{grid-template-columns:1fr 1fr}}
+.section-title{font-size:15px; color:var(--gold2); font-weight:bold; margin:22px 0 6px; display:flex; align-items:center; gap:8px}
+.section-title::after{content:""; flex:1; height:1px; background:var(--line)}
+.card-box{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:14px}
+.muted{color:var(--muted); font-size:13px; line-height:1.9}
+.empty{text-align:center; color:var(--muted); padding:44px 10px; font-size:14px; line-height:2.2}
+.empty .ic{font-size:46px}
+.sub-card{background:#0f1d31; border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:10px; position:relative; animation:popIn .3s ease both}
+.sub-card .rm{position:absolute; top:8px; left:10px; color:var(--red); cursor:pointer; font-size:13px; font-weight:bold}
+.kv{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px; gap:10px}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--muted); flex-shrink:0}
+.kv .v{font-weight:bold; text-align:left}
+.total-bar{background:linear-gradient(135deg,#243b17,#152439); border:1px solid var(--green); border-radius:12px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-weight:bold}
+.follow-item{border-right:3px solid var(--gold); background:#0f1d31; border-radius:8px; padding:10px 12px; margin-bottom:8px}
+.follow-item .d{font-size:11px; color:var(--gold2); margin-bottom:3px}
+.del-x{color:var(--red); cursor:pointer; font-size:13px; float:left}
+.search{margin-bottom:12px}
+#toast{position:fixed; bottom:24px; right:50%; transform:translateX(50%); background:var(--gold); color:#1a1405; padding:12px 26px; border-radius:999px; font-weight:bold; font-size:14px; display:none; z-index:99; box-shadow:0 8px 24px #00000070; animation:popIn .25s ease}
+header.m{display:none}
+@media(max-width:900px){
+  header.m{display:flex; align-items:center; gap:10px; padding:8px 2px 14px}
+  header.m .logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--gold),#8a6a24);display:flex;align-items:center;justify-content:center;font-size:21px}
+  header.m h1{font-size:18px; margin:0; color:var(--gold2)}
+  header.m p{margin:0; font-size:11px; color:var(--muted)}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar" id="sidebar"></nav>
+<div class="app" id="app"></div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ==================== التخزين ==================== */
+const DB_KEY='tanfeez_v2';
+let db=load();
+function load(){
+  try{ const d=JSON.parse(localStorage.getItem(DB_KEY)); if(d&&d.records) return d; }catch(e){}
+  // شركة البنك الإسلامي العربي جاهزة من نماذج المكتب
+  return { seq:2, records:[], settings:{lawyer:''}, companies:[{
+    id:'c1',
+    name:'شركة البنك الإسلامي العربي المساهمة العامة المحدودة',
+    reg:'563201011',
+    address:'رام الله – الماصيون',
+    wakilName:'مهند سعيد محمود عساف',
+    wakalaNo:'3455/2011',
+    notary:'رام الله',
+    wakalaDate:'07/03/2011',
+    lawyers:'أشرف الفار و/أو نضال فريج و/أو نداء حليسي و/أو فاروق طباخي و/أو جواد مخلوف و/أو عمرو أبو فرحة و/أو ابراهيم خضر و/أو مصطفى طه و/أو أيهم عزام و/أو جيهان حسين'
+  }]};
+}
+function save(){
+  try{ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+  catch(e){ alert('⚠️ التخزين مش شغال هون!\nافتح الملف بمتصفح كروم أو إيدج من سطح المكتب عشان تنحفظ معاملاتك.'); }
+}
+(function(){ try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); }
+  catch(e){ setTimeout(()=>alert('⚠️ تنبيه: هالشاشة ما بتحفظ البيانات.\nافتح الملف بمتصفح كروم أو إيدج العادي عشان يشتغل الحفظ.'),600); } })();
+function uid(){ return 'r'+(db.seq++); }
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const today=()=>new Date().toISOString().slice(0,10);
+const YEAR=new Date().getFullYear();
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
+const fmtNum=n=>{ n=Number(String(n).replace(/[,\s]/g,'')); return isNaN(n)?'':n.toLocaleString('en-US'); };
+const numVal=n=>Number(String(n||'').replace(/[,\s]/g,''))||0;
+
+/* ==================== الأنواع ==================== */
+const TYPES={
+  chk:{name:'الشيكات', one:'شيكات', ic:'🧾'},
+  kmb:{name:'الكمبيالات', one:'كمبيالات', ic:'📜'},
+  hkm:{name:'تنفيذ الأحكام', one:'تنفيذ أحكام', ic:'⚖️'}
+};
+const STATUSES=[['new','جديد','st-new'],['run','قيد المتابعة','st-run'],['done','منجز','st-done']];
+const stName=c=>(STATUSES.find(x=>x[0]===c)||STATUSES[0])[1];
+const stCls=c=>(STATUSES.find(x=>x[0]===c)||STATUSES[0])[2];
+const CURR=['شيكل','دينار','دولار'];
+
+/* ==================== التفقيط (المبلغ كتابةً) ==================== */
+const T_ONES=['','واحد','اثنان','ثلاثة','أربعة','خمسة','ستة','سبعة','ثمانية','تسعة','عشرة','أحد عشر','اثنا عشر','ثلاثة عشر','أربعة عشر','خمسة عشر','ستة عشر','سبعة عشر','ثمانية عشر','تسعة عشر'];
+const T_TENS=['','عشرة','عشرون','ثلاثون','أربعون','خمسون','ستون','سبعون','ثمانون','تسعون'];
+const T_HUND=['','مئة','مئتان','ثلاثمئة','أربعمئة','خمسمئة','ستمئة','سبعمئة','ثمانمئة','تسعمئة'];
+function tf99(n){ if(n<20) return T_ONES[n]; const u=n%10,t=Math.floor(n/10); return u? T_ONES[u]+' و'+T_TENS[t] : T_TENS[t]; }
+function tf999(n){ const h=Math.floor(n/100), r=n%100, p=[]; if(h)p.push(T_HUND[h]); if(r)p.push(tf99(r)); return p.join(' و'); }
+function tafqit(n){
+  n=Math.floor(Math.abs(n)); if(!n) return 'صفر';
+  const parts=[];
+  const mil=Math.floor(n/1000000); const th=Math.floor((n%1000000)/1000); const rest=n%1000;
+  if(mil){ parts.push(mil===1?'مليون': mil===2?'مليونان': mil<=10? tf999(mil)+' ملايين' : tf999(mil)+' مليون'); }
+  if(th){ parts.push(th===1?'ألف': th===2?'ألفان': th<=10? tf999(th)+' آلاف' : tf999(th)+' ألف'); }
+  if(rest){ parts.push(tf999(rest)); }
+  return parts.join(' و');
+}
+const tafqitCurr=(n,curr)=> tafqit(n)+' '+curr;
+
+/* ==================== قواعد اللغة حسب عدد المحكوم عليهم ==================== */
+function gram(debtors){
+  const n=debtors.length, f=n===1&&debtors[0].g==='f';
+  return {
+    alih: n===1? (f?'المحكوم عليها':'المحكوم عليه') : n===2? 'المحكوم عليهما' : 'المحكوم عليهم',
+    ilaih: n===1? (f?'إلى المحكوم عليها':'إلى المحكوم عليه') : n===2? 'إلى المحكوم عليهما' : 'إلى المحكوم عليهم',
+    mutalaba: n===1? (f?'لمطالبتها':'لمطالبته') : n===2? 'لمطالبتهما' : 'لمطالبتهم',
+    tadamon: n===2? '"بالتضامن والتكافل فيما بينهما"' : n>2? '"بالتضامن والتكافل فيما بينهم"' : ''
+  };
+}
+const holder=d=> d.g==='f'?'حاملة هوية رقم':'حامل هوية رقم';
+const addrWord=d=> d.g==='f'?'عنوانها':'عنوانه';
+
+/* ==================== نصوص ثابتة من نماذج المكتب ==================== */
+const WAKALA_BOILER='وإجمالاً فقد وكلتهم في تقديم الطلبات/الاستدعاءات/المطالبات/الاستشكالات الناشئة و/أو التي قد تنشأ عن هذه القضية وفي طلب استصدار قرارات الحجز/الحبس، وفي طلب إيقاع الحجوزات بكافة أشكالها وأنواعها على الأموال المنقولة وغير المنقولة وفي تمثيل الشركة أمام دائرة/دوائر التنفيذ المختصة وفي التوقيع نيابة عنها أمام دائرة/دوائر التنفيذ و/أو دوائر الشرطة و/أو أية جهة مختصة رسمية وغير رسمية أخرى وفي قبض المبالغ وإجراء المصالحة وتوقيع التسويات والمخالصة النهائية والإبراء النهائي، والمطالبة بالرسوم والمصاريف وأتعاب المحاماة وفي تمثيل الشركة أمام جميع المحاكم بكافة أنواعها ودرجاتها وذلك لغايات تحصيل حقوقها وحتى اخر إجراء قانوني بهذا الخصوص وفي كل ما هو منصوص عليه بموجب وكالتي العامة المذكورة أعلاه وفي حضور جلسات الاقتدار والاستشكالات وفي المخاصمة والمدافعة والمرافعة لاخر درجة من درجات المحاكمة صلحاً وبداية واستئنافاً وتمييزاً ولدى محكمة العدل العليا وفي إمضاء وتقديم وتبلغ وتبليغ جميع الأوراق والاستدعاءات واللوائح والاخطارات والمذكرات والتحارير والدعاوى وإعلام الحكم والاعتراض وطلب الحجزين التحفظي والإجرائي وفكهما وتثبيتهما وفي انتخاب أهل الخبرة والمحكمين والمميزين وقبول أو رد تقاريرهم والموافقة أو الاعتراض على أي تقرير صدر أو سيصدر ضد مصلحتنا وفي المصالحة وإمضائها والإقرار بالحق والإبراء منه والتنازل عنه وإجراء المحاسبة وتعيين المحاسبين وفي التحكيم وطلب تصديق قرار المحكمين لدى المحكمة وفي الكشف والتدقيق والتطبيق والاستكساب وإنكار الخطوط والإمضاءات والأختام والبصمات والطعن فيها أو الاعتراف بها وفي تقديم البينات وطلبها وسماعها وحصرها والعجز عنها وفي طلب الدخول بصفة شخص ثالث أو أشخاص ثالثة وطلب إدخال الغير وفي الادعاء بالتقابل، كذلك في تقديم أو سحب المستندات واستخراج النسخ وفي رد القضاة. وتعيين قيم وتوجيه الإنذارات والإخطارات بما فيها توجيه الإنذارات بواسطة دائرة تسجيل الأراضي ونقل الدعوى وتوقيفها وإسقاطها وفي توجيه اليمين الحاسمة وردها والنكول عنها. وفي تنفيذ الحكم أو القرار الذي يصدر لصالحنا لدى دائرة الإجراء/التنفيذ أو أية دائرة تقوم مقامها والقيام بجميع المعاملات الإجرائية/التنفيذية وقبض المبالغ التي تحصل من المحكوم عليه رأساً أو من دائرة الإجراء/التنفيذ والودائع المدفوعة للمحكمة أو لغيرها من الدوائر باسمنا او منا باسم الغير واعطاء الوصولات بذلك وطلب حبس المدين والرجوع عنه وحجز وبيع امواله المنقولة وغير المنقولة والمرافعة والظهور امام رئيس الاجراء/التنفيذ او مامور الاجراء/التنفيذ واستئناف كل قرار اجرائي/تنفيذي يضر بمصلحتنا للمحكمة المختصة تنفيذاً للحكم وامضاء جميع الاوراق والمعاملات اللازمة للتنفيذ وقبول التسوية او رفضها والدخول بالمزايدة باسمنا بالبدل الذي يراه مناسباً والبيع وتسليم المال واعطاء الايصالات وقبض الثمن كما يكون له حق المثول امام جميع المحاكم النظامية والشرعية والكنائسية والعسكرية والجهات والادارات الحكومية والعسكرية والمجالس والهيئات المحلية على اختلاف درجاتها واختصاصاتها واعمالها واستصدار الاحكام القضائية والقرارات والاوامر الادارية والحصول عليها وطلب تاييدها او ردها او الاعتراض عليها او التظلم منها وفي تقديم الاستئناف والتمييز وطلب اعادة المحاكمة واعتراض الغير بكل او بعض ما وكلوا به او نشأ عنه كما كلفتهم بالمطالبة بالرسوم والمصاريف واتعاب المحاماة والفوائد. واجمالاً فقد وكلناهم في عمل كل ما يروه مناسباً لصالح الشركة ولو لم يكن منصوصاً عليه بهذه الوكالة وبالقيام بجميع ما من شأنه ان يحفظ حقوق الشركة بهذا الخصوص ولهم توكيل وانابة واشراك الغير في جميع او بعض ما ذكر اعلاه مصدقين من الان على ما اجروه او يجروه هم او من ينوب عنهم وكالة خاصة مفوضة لرأيهم وعمل واختيار الوكلاء المذكورين. وانني اعفي/نعفي بهذا وكلاءنا المذكورين من اية مسؤولية عن الضرر او الخسارة او الربح الفائت الناتج او المتسبب عن عدم معرفة او خطأ او تسرع او اهمال او تباطؤ من ناحيتهم او من ناحية موظفيهم او ممثليهم او وكلائهم او شركائهم.';
+
+/* ==================== توليد ملفات Word ==================== */
+const compLine=c=> `${c.name} المسجلة لدى مسجل الشركات في وزارة الاقتصاد الوطني تحت الرقم (${c.reg})/ ${c.address}.`;
+
+function debtorLinesHTML(debtors, withAddr){
+  return debtors.map((d,i)=>{
+    let s=`<p class="j"><b>${i+1}.</b> ${esc(d.name)}، ${holder(d)} (${esc(d.id)}).`;
+    if(withAddr && d.addr) s+=`<br>${addrWord(d)} لغايات التبليغ: ${esc(d.addr)}${d.phone? '، هاتف رقم ('+esc(d.phone)+')':''}.`;
+    return s+'</p>';
+  }).join('');
+}
+
+function mahkoumBihHTML(r){
+  const curr=r.curr||'شيكل';
+  if(r.type==='chk'){
+    const n=r.rows.length, total=r.rows.reduce((a,x)=>a+numVal(x.amount),0);
+    const words=r.totalWords||tafqitCurr(total,curr);
+    const chkWord= n>1? `الشيكات عدد (${n}) المحررة لأمر الشركة والواردة تفاصيلها` : `الشيك عدد (1) المحرر لأمر الشركة والوارد تفاصيله`;
+    return `<p class="j"><b>المحكوم به:</b> مبلغ (${fmtNum(total)}) ${esc(words)} بموجب ${chkWord} في الجدول المبين أدناه:</p>`
+      + tableHTML(['رقم الشيك','تاريخ الاستحقاق','مبلغ الشيك','البنك المسحوب عليه'],
+          r.rows.map(x=>[esc(x.no), esc(x.due), `(${fmtNum(x.amount)}) ${curr}`, esc(x.bank)]));
+  }
+  if(r.type==='kmb'){
+    const n=r.rows.length;
+    const claimed=numVal(r.claimed), orig=numVal(r.orig||r.claimed);
+    const cw=r.claimedWords||tafqitCurr(claimed,curr), ow=r.origWords||tafqitCurr(orig,curr);
+    const kmbWord= n>1? `الكمبيالات عدد (${n}) المحررة لأمر الشركة والواردة تفاصيلها` : `الكمبيالة عدد (1) المحررة لأمر الشركة والواردة تفاصيلها`;
+    const head= (orig && orig!==claimed)
+      ? `مبلغ (${fmtNum(claimed)}) ${esc(cw)}، وذلك من أصل الكمبيالة البالغ قيمتها (${fmtNum(orig)}) ${esc(ow)}، وذلك بموجب ${kmbWord}`
+      : `مبلغ (${fmtNum(claimed)}) ${esc(cw)}، وذلك بموجب ${kmbWord}`;
+    return `<p class="j"><b>المحكوم به:</b> ${head} في الجدول المبين أدناه:</p>`
+      + tableHTML(['قيمة الكمبيالة','تاريخ التحرير','تاريخ الاستحقاق'],
+          r.rows.map(x=>[`(${fmtNum(x.amount)}) ${curr}`, esc(x.writeDate), esc(x.due)]));
+  }
+  // أحكام
+  const amt=numVal(r.claimed), w=r.claimedWords||tafqitCurr(amt,curr);
+  return `<p class="j"><b>المحكوم به:</b> مبلغ (${fmtNum(amt)}) ${esc(w)}، وذلك بموجب الحكم الصادر عن محكمة ${esc(r.court||'................')} في الدعوى رقم (${esc(r.caseNo||'........')}) بتاريخ ${esc(r.judgDate||'    /    /    ')} والمكتسب الدرجة القطعية.</p>`
+    + `<p class="j">${esc(r.judgNotes||'')}</p>`;
+}
+
+function tableHTML(headers,rows){
+  return `<table dir="rtl" style="width:100%;border-collapse:collapse;margin:8pt 0" border="1" cellpadding="6">
+  <tr>${headers.map(h=>`<td style="background:#f2f2f2;text-align:center;font-weight:bold">${h}</td>`).join('')}</tr>
+  ${rows.map(row=>`<tr>${row.map(cell=>`<td style="text-align:center">${cell}</td>`).join('')}</tr>`).join('')}
+  </table>`;
+}
+
+function sanadWord(r){
+  if(r.type==='chk') return r.rows.length>1? 'الشيكات المبينة أعلاه':'الشيك المبين أعلاه';
+  if(r.type==='kmb') return r.rows.length>1? 'إعلام الكمبيالات المبينة أعلاه':'إعلام الكمبيالة المبينة أعلاه';
+  return 'الحكم المبين أعلاه';
+}
+
+function wordShell(bodyHTML){
+  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>مستند</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+@page{size:A4; margin:2cm 2cm 2cm 2cm; mso-page-orientation:portrait;}
+body{font-family:'Simplified Arabic','Traditional Arabic',Arial; font-size:14pt; direction:rtl; text-align:right; line-height:1.7}
+p{margin:6pt 0}
+p.j{text-align:justify}
+h1{font-size:18pt; text-align:center; text-decoration:underline; margin:4pt 0 14pt}
+table{font-size:13pt}
+.sig{margin-top:26pt}
+</style></head>
+<body dir="rtl">${bodyHTML}</body></html>`;
+}
+
+function buildMahdar(r){
+  const c=db.companies.find(x=>x.id===r.companyId)||db.companies[0];
+  const g=gram(r.debtors);
+  const lawyer=db.settings.lawyer||'';
+  const body=`
+  <p style="text-align:right"><b>دائرة تنفيذ: ${esc(r.court2||'................')}</b></p>
+  <h1>محضر تنفيذ</h1>
+  <p class="j"><b>المحكوم لها:</b> ${esc(compLine(c))}</p>
+  <p class="j"><b>${g.alih}:</b></p>
+  ${debtorLinesHTML(r.debtors,true)}
+  ${g.tadamon? `<p style="text-align:center"><b>${g.tadamon}</b></p>`:''}
+  ${mahkoumBihHTML(r)}
+  <p class="j">بالإضافة إلى رسوم ومصاريف الدعوى التنفيذية.</p>
+  <p class="j">بتاريخ :&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;/${YEAR} حضر وكيل المحكوم لها: ${esc(lawyer)}</p>
+  <p class="j">وطلب تنفيذ ${sanadWord(r)} تنفيذياً وعليه سُطرت ورقة الإخبار ${g.ilaih} بعد استيفاء الرسم القانوني حسب الأصول.</p>
+  <p class="sig"><b>وكيل المحكوم لها</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>مأمور التنفيذ</b></p>
+  <p style="text-align:center; margin-top:20pt">الخاتم الرسمي</p>`;
+  return wordShell(body);
+}
+
+function buildWakala(r){
+  const c=db.companies.find(x=>x.id===r.companyId)||db.companies[0];
+  const g=gram(r.debtors);
+  const total = r.type==='chk'? r.rows.reduce((a,x)=>a+numVal(x.amount),0) : numVal(r.claimed);
+  const curr=r.curr||'شيكل';
+  const words= r.type==='chk'? (r.totalWords||tafqitCurr(total,curr)) : (r.claimedWords||tafqitCurr(total,curr));
+  let mablagh='';
+  if(r.type==='kmb' && numVal(r.orig) && numVal(r.orig)!==total){
+    const ow=r.origWords||tafqitCurr(numVal(r.orig),curr);
+    mablagh=`بمبلغ (${fmtNum(total)}) ${esc(words)}، وذلك من أصل الكمبيالة البالغ قيمتها (${fmtNum(r.orig)}) ${esc(ow)}، وذلك بموجب الكمبيالة عدد (${r.rows.length}) المحررة لأمر الشركة والواردة تفاصيلها في الجدول المبين أدناه:`;
+  } else if(r.type==='chk'){
+    const n=r.rows.length;
+    mablagh=`بمبلغ (${fmtNum(total)}) ${esc(words)} بموجب ${n>1?'الشيكات عدد ('+n+') المحررة لأمر الشركة والواردة تفاصيلها':'الشيك عدد (1) المحرر لأمر الشركة والوارد تفاصيله'} في الجدول المبين أدناه:`;
+  } else if(r.type==='kmb'){
+    mablagh=`بمبلغ (${fmtNum(total)}) ${esc(words)} بموجب الكمبيالة عدد (${r.rows.length}) المحررة لأمر الشركة والواردة تفاصيلها في الجدول المبين أدناه:`;
+  } else {
+    mablagh=`بمبلغ (${fmtNum(total)}) ${esc(words)} المحكوم به بموجب الحكم الصادر عن محكمة ${esc(r.court||'........')} في الدعوى رقم (${esc(r.caseNo||'....')}) بتاريخ ${esc(r.judgDate||'')}.`;
+  }
+  let tbl='';
+  if(r.type==='chk') tbl=tableHTML(['رقم الشيك','تاريخ الاستحقاق','مبلغ الشيك','البنك المسحوب عليه'], r.rows.map(x=>[esc(x.no),esc(x.due),`(${fmtNum(x.amount)}) ${curr}`,esc(x.bank)]));
+  if(r.type==='kmb') tbl=tableHTML(['قيمة الكمبيالة','تاريخ التحرير','تاريخ الاستحقاق'], r.rows.map(x=>[`(${fmtNum(x.amount)}) ${curr}`,esc(x.writeDate),esc(x.due)]));
+  const body=`
+  <h1>وكالة خاصة</h1>
+  <p class="j">بتاريخه أنا الموقع أدناه ${esc(c.wakilName||'................')} بصفتي وكيلاً عاماً عن ${esc(c.name)} المسجلة لدى مسجل الشركات في وزارة الاقتصاد الوطني تحت الرقم (${esc(c.reg)}) والمشار إليها فيما يلي "الشركة" بموجب الوكالة العامة رقم (${esc(c.wakalaNo||'........')}) والمصادق عليها لدى كاتب عدل ${esc(c.notary||'........')} بتاريخ ${esc(c.wakalaDate||'........')}، فقد وكلت عني المحامين ${esc(c.lawyers||'................')} (مجتمعين و/أو منفردين) ليمثلوني وينوبوا عني أمام دائرة تنفيذ ${esc(r.court2||'................')} و/أو أي محكمة و/أو أي دائرة أخرى مختصة بخصوص إعداد محضر تنفيذ/إقامة ومتابعة الدعوى التنفيذية ضد كل من:</p>
+  ${debtorLinesHTML(r.debtors,false)}
+  <p class="j">وذلك ${g.mutalaba} ${g.tadamon? g.tadamon+' ':''}${mablagh}</p>
+  ${tbl}
+  <p class="j">بالإضافة إلى رسوم ومصاريف الدعوى التنفيذية.</p>
+  <p class="j">${WAKALA_BOILER}</p>
+  <p class="j" style="margin-top:16pt">أصادق على هذه الوكالة وعلى صحة توقيع الموكل بتاريخ:&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;/${YEAR}</p>
+  <p class="sig"><b>المحامي</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>الموكل</b></p>`;
+  return wordShell(body);
+}
+
+function downloadDoc(filename, html){
+  const blob=new Blob(['﻿', html], {type:'application/msword;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+function printHtml(html){
+  const w=window.open('','_blank');
+  w.document.write(html); w.document.close();
+  setTimeout(()=>{w.focus(); w.print();},400);
+}
+function dlMahdar(id){ const r=rec(id); downloadDoc(`محضر تنفيذ - ${r.debtors[0]?.name||''}.doc`, buildMahdar(r)); toast('⬇️ نزل المحضر — افتحه بالوورد'); }
+function dlWakala(id){ const r=rec(id); downloadDoc(`وكالة خاصة - ${r.debtors[0]?.name||''}.doc`, buildWakala(r)); toast('⬇️ نزلت الوكالة — افتحها بالوورد'); }
+function prMahdar(id){ printHtml(buildMahdar(rec(id))); }
+function prWakala(id){ printHtml(buildWakala(rec(id))); }
+const rec=id=>db.records.find(x=>x.id===id);
+
+/* ==================== التنقّل ==================== */
+let view={page:'home'};
+let stack=[];
+function go(v,push=true){ if(push) stack.push(view); view=v; render(); window.scrollTo(0,0); }
+function back(){ view=stack.pop()||{page:'home'}; render(); window.scrollTo(0,0); }
+
+function renderSidebar(){
+  const cnt=t=>db.records.filter(r=>r.type===t).length;
+  const on=(pg,ty)=> (view.page===pg && (ty===undefined||view.type===ty))?'on':'';
+  document.getElementById('sidebar').innerHTML=`
+  <div class="sb-brand"><div class="logo">⚖️</div><div><b>قسم التنفيذ</b><small>إدارة المعاملات التنفيذية</small></div></div>
+  <div class="sb-item ${on('home')}" onclick="stack=[];go({page:'home'},false)"><span>🏠</span> الرئيسية</div>
+  <div class="sb-sep"></div>
+  <div class="sb-item ${on('mahader')}" onclick="stack=[{page:'home'}];go({page:'mahader'},false)"><span>📑</span> المحاضر التنفيذية</div>
+  ${Object.entries(TYPES).map(([k,t])=>`
+    <div class="sb-item sub ${on('list',k)}" onclick="stack=[{page:'home'},{page:'mahader'}];go({page:'list',type:'${k}'},false)">
+      <span>${t.ic}</span> ${t.name} <span class="n">${cnt(k)}</span></div>`).join('')}
+  <div class="sb-sep"></div>
+  <div class="sb-item ${on('companies')}" onclick="stack=[{page:'home'}];go({page:'companies'},false)"><span>🏢</span> الشركات الموكِّلة <span class="n">${db.companies.length}</span></div>
+  <div class="sb-item ${on('settings')}" onclick="stack=[{page:'home'}];go({page:'settings'},false)"><span>⚙️</span> الإعدادات</div>
+  <div class="sb-sep"></div>
+  <div class="sb-item" onclick="exportDb()"><span>⬇️</span> نسخة احتياطية</div>
+  <div class="sb-item" onclick="document.getElementById('impFile').click()"><span>⬆️</span> استرجاع نسخة</div>
+  <input type="file" id="impFile" accept=".json" style="display:none" onchange="importDb(this)">`;
+}
+
+function mHeader(){
+  return `<header class="m"><div class="logo">⚖️</div><div><h1>قسم التنفيذ</h1><p>إدارة المعاملات التنفيذية</p></div></header>`;
+}
+function crumbs(txt){ return `<div class="crumb"><button class="back-btn" onclick="back()">→ رجوع</button><span>${txt}</span></div>`; }
+
+function render(){
+  renderSidebar();
+  const app=document.getElementById('app');
+  const p=view.page;
+  let html='';
+  if(p==='home') html=vHome();
+  else if(p==='mahader') html=vMahader();
+  else if(p==='list') html=vList(view.type);
+  else if(p==='form') html=vForm();
+  else if(p==='record') html=vRecord(view.id, view.tab||'docs');
+  else if(p==='companies') html=vCompanies();
+  else if(p==='company') html=vCompany(view.editId);
+  else if(p==='settings') html=vSettings();
+  app.innerHTML=`<div class="page">${mHeader()}${html}</div>`;
+}
+
+/* ==================== الرئيسية ==================== */
+function vHome(){
+  return `
+  <div class="hero">
+    <div class="big">⚖️</div>
+    <h1>قسم التنفيذ</h1>
+    <p>مكتب المحاماة — إعداد المحاضر التنفيذية والوكالات بنقرة وحدة</p>
+  </div>
+  <div class="grid stagger">
+    <div class="big-card full gold" onclick="go({page:'mahader'})">
+      <span class="badge">${db.records.length}</span>
+      <div class="ic">📑</div><div class="nm">المحاضر التنفيذية</div>
+      <div class="cnt">شيكات • كمبيالات • تنفيذ أحكام — عبّي البيانات واطلع Word جاهز</div>
+    </div>
+    <div class="big-card" onclick="go({page:'companies'})">
+      <span class="badge">${db.companies.length}</span>
+      <div class="ic">🏢</div><div class="nm">الشركات الموكِّلة</div>
+      <div class="cnt">البنوك والشركات اللي إحنا وكلاء عنها</div>
+    </div>
+    <div class="big-card" onclick="go({page:'settings'})">
+      <div class="ic">⚙️</div><div class="nm">الإعدادات</div>
+      <div class="cnt">اسم وكيل المحكوم لها</div>
+    </div>
+    <div class="big-card" onclick="exportDb()">
+      <div class="ic">💾</div><div class="nm">نسخة احتياطية</div>
+      <div class="cnt">نزّل كل بياناتك بملف واحد</div>
+    </div>
+  </div>`;
+}
+
+/* ==================== نافذة المحاضر التنفيذية ==================== */
+function vMahader(){
+  const cnt=t=>db.records.filter(r=>r.type===t).length;
+  return crumbs('📑 المحاضر التنفيذية')+`
+  <div class="hero" style="padding:10px 10px 22px">
+    <h1 style="font-size:26px">المحاضر التنفيذية</h1>
+    <p>اختار نوع المعاملة</p>
+  </div>
+  <div class="grid stagger">
+    ${Object.entries(TYPES).map(([k,t])=>`
+    <div class="big-card" onclick="go({page:'list',type:'${k}'})">
+      <span class="badge">${cnt(k)}</span>
+      <div class="ic">${t.ic}</div><div class="nm">${t.name}</div>
+      <div class="cnt">اكبس للدخول</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+/* ==================== قائمة معاملات نوع ==================== */
+function vList(type){
+  const T=TYPES[type];
+  const q=(view.q||'').trim();
+  let list=db.records.filter(r=>r.type===type);
+  if(q) list=list.filter(r=> (r.debtors.map(d=>d.name).join(' ')+' '+(r.court2||'')).includes(q));
+  list.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  return crumbs(`📑 المحاضر التنفيذية ← ${T.ic} ${T.name}`)+`
+  <button class="btn" onclick="openForm('${type}')">➕ معاملة ${T.one} جديدة</button>
+  <div style="height:14px"></div>
+  <input class="search" placeholder="🔍 دوّر باسم المحكوم عليه أو الدائرة..." value="${esc(q)}" oninput="view.q=this.value;render();const s=document.querySelector('.search');s.focus();s.setSelectionRange(s.value.length,s.value.length)">
+  ${list.length? list.map(r=>`
+    <div class="list-item" onclick="go({page:'record',id:'${r.id}'})">
+      <div class="li-top">
+        <span class="li-title">${esc(r.debtors[0]?.name||'بدون اسم')}${r.debtors.length>1? ' + '+(r.debtors.length-1):''}</span>
+        <span class="pill ${stCls(r.status)}">${stName(r.status)}</span>
+      </div>
+      <div class="li-sub">
+        <span>🏛️ ${esc(r.court2||'—')}</span>
+        <span>💰 ${fmtNum(r.type==='chk'? r.rows.reduce((a,x)=>a+numVal(x.amount),0) : r.claimed)} ${esc(r.curr)}</span>
+        <span>📅 ${esc((r.createdAt||'').slice(0,10))}</span>
+      </div>
+    </div>`).join('') : `<div class="empty"><div class="ic">${T.ic}</div>ولا معاملة بهالقسم لسا<br>اكبس "معاملة جديدة" وعبّي البيانات وبيطلعلك المحضر والوكالة Word جاهزين</div>`}`;
+}
+
+/* ==================== نموذج الإدخال ==================== */
+let draft=null;
+function openForm(type, editId){
+  if(editId){ draft=JSON.parse(JSON.stringify(rec(editId))); }
+  else draft={
+    id:null, type, companyId:db.companies[0]?.id||'', court2:'',
+    debtors:[{name:'',id:'',g:'m',addr:'',phone:''}],
+    rows: type==='chk'? [{no:'',due:'',amount:'',bank:''}] : type==='kmb'? [{amount:'',writeDate:'',due:''}] : [],
+    claimed:'', claimedWords:'', orig:'', origWords:'', totalWords:'',
+    court:'', caseNo:'', judgDate:'', judgNotes:'',
+    curr:'شيكل', status:'new', createdAt:new Date().toISOString(), followups:[]
+  };
+  go({page:'form'});
+}
+function vForm(){
+  const T=TYPES[draft.type];
+  return crumbs(`${T.ic} ${draft.id? 'تعديل معاملة':'معاملة '+T.one+' جديدة'}`)+`
+  <div class="card-box">
+    <div class="row2">
+      <div><label>دائرة التنفيذ (المدينة)</label><input id="f_court2" value="${esc(draft.court2)}" placeholder="مثال: نابلس"></div>
+      <div><label>المحكوم لها (الشركة الموكِّلة)</label>
+        <select id="f_company">${db.companies.map(c=>`<option value="${c.id}" ${draft.companyId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+    </div>
+    <div class="row2">
+      <div><label>العملة</label><select id="f_curr" onchange="draft.curr=this.value;refreshTotals()">${CURR.map(c=>`<option ${draft.curr===c?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div></div>
+    </div>
+
+    <div class="section-title">👥 المحكوم عليهم</div>
+    <div id="debtorsBox"></div>
+    <button class="btn ghost" onclick="draft.debtors.push({name:'',id:'',g:'m',addr:'',phone:''});renderDebtors()">➕ أضف محكوم عليه</button>
+
+    ${draft.type==='chk'? `
+    <div class="section-title">🧾 الشيكات</div>
+    <div id="rowsBox"></div>
+    <button class="btn ghost" onclick="draft.rows.push({no:'',due:'',amount:'',bank:draft.rows[draft.rows.length-1]?.bank||''});renderRows()">➕ أضف شيك</button>
+    <div class="total-bar"><span>المجموع</span><span id="totalSpan">0</span></div>
+    <label>المبلغ كتابةً (تفقيط تلقائي — عدّله إذا بدك)</label>
+    <input id="f_totalWords" value="${esc(draft.totalWords)}" onchange="draft.totalWords=this.value">
+    `:''}
+
+    ${draft.type==='kmb'? `
+    <div class="section-title">📜 الكمبيالة</div>
+    <div class="row2">
+      <div><label>المبلغ المطالب به رقماً</label><input id="f_claimed" inputmode="decimal" value="${esc(draft.claimed)}" oninput="draft.claimed=this.value;refreshTotals()"></div>
+      <div><label>أصل قيمة الكمبيالة (إذا المطالبة بجزء)</label><input id="f_orig" inputmode="decimal" value="${esc(draft.orig)}" oninput="draft.orig=this.value;refreshTotals()" placeholder="اتركه فاضي إذا نفس المبلغ"></div>
+    </div>
+    <label>المبلغ المطالب به كتابةً</label>
+    <input id="f_claimedWords" value="${esc(draft.claimedWords)}" onchange="draft.claimedWords=this.value">
+    <label>أصل القيمة كتابةً</label>
+    <input id="f_origWords" value="${esc(draft.origWords)}" onchange="draft.origWords=this.value">
+    <div class="section-title">تفاصيل الكمبيالات (الجدول)</div>
+    <div id="rowsBox"></div>
+    <button class="btn ghost" onclick="draft.rows.push({amount:'',writeDate:'',due:''});renderRows()">➕ أضف كمبيالة</button>
+    `:''}
+
+    ${draft.type==='hkm'? `
+    <div class="section-title">⚖️ بيانات الحكم</div>
+    <div class="row3">
+      <div><label>المحكمة مصدرة الحكم</label><input id="f_hcourt" value="${esc(draft.court)}" onchange="draft.court=this.value" placeholder="صلح رام الله"></div>
+      <div><label>رقم الدعوى</label><input id="f_caseNo" value="${esc(draft.caseNo)}" onchange="draft.caseNo=this.value" placeholder="123/2025"></div>
+      <div><label>تاريخ الحكم</label><input id="f_judgDate" value="${esc(draft.judgDate)}" onchange="draft.judgDate=this.value" placeholder="01/01/2026"></div>
+    </div>
+    <label>المبلغ المحكوم به رقماً</label>
+    <input id="f_claimed" inputmode="decimal" value="${esc(draft.claimed)}" oninput="draft.claimed=this.value;refreshTotals()">
+    <label>المبلغ كتابةً</label>
+    <input id="f_claimedWords" value="${esc(draft.claimedWords)}" onchange="draft.claimedWords=this.value">
+    <label>ملاحظات إضافية تنحط بالمحضر (اختياري)</label>
+    <textarea id="f_judgNotes" onchange="draft.judgNotes=this.value">${esc(draft.judgNotes)}</textarea>
+    `:''}
+  </div>
+  <button class="btn" onclick="saveForm()">💾 احفظ المعاملة</button>`;
+}
+function renderDebtors(){
+  const box=document.getElementById('debtorsBox'); if(!box) return;
+  box.innerHTML=draft.debtors.map((d,i)=>`
+  <div class="sub-card">
+    ${draft.debtors.length>1? `<span class="rm" onclick="draft.debtors.splice(${i},1);renderDebtors()">حذف ✖</span>`:''}
+    <label>الاسم الرباعي (${i+1})</label>
+    <input value="${esc(d.name)}" onchange="draft.debtors[${i}].name=this.value">
+    <div class="row3">
+      <div><label>رقم الهوية</label><input inputmode="numeric" value="${esc(d.id)}" onchange="draft.debtors[${i}].id=this.value"></div>
+      <div><label>الجنس</label><select onchange="draft.debtors[${i}].g=this.value"><option value="m" ${d.g==='m'?'selected':''}>ذكر (حامل)</option><option value="f" ${d.g==='f'?'selected':''}>أنثى (حاملة)</option></select></div>
+      <div><label>هاتف (اختياري)</label><input inputmode="tel" value="${esc(d.phone)}" onchange="draft.debtors[${i}].phone=this.value"></div>
+    </div>
+    <label>العنوان لغايات التبليغ</label>
+    <input value="${esc(d.addr)}" onchange="draft.debtors[${i}].addr=this.value" placeholder="نابلس- رفيديا- قرب الاتصالات">
+  </div>`).join('');
+}
+function renderRows(){
+  const box=document.getElementById('rowsBox'); if(!box) return;
+  if(draft.type==='chk'){
+    box.innerHTML=draft.rows.map((x,i)=>`
+    <div class="sub-card">
+      ${draft.rows.length>1? `<span class="rm" onclick="draft.rows.splice(${i},1);renderRows();refreshTotals()">حذف ✖</span>`:''}
+      <div class="row4">
+        <div><label>رقم الشيك</label><input inputmode="numeric" value="${esc(x.no)}" onchange="draft.rows[${i}].no=this.value"></div>
+        <div><label>تاريخ الاستحقاق</label><input value="${esc(x.due)}" onchange="draft.rows[${i}].due=this.value" placeholder="20/06/2025"></div>
+        <div><label>المبلغ</label><input inputmode="decimal" value="${esc(x.amount)}" oninput="draft.rows[${i}].amount=this.value;refreshTotals()"></div>
+        <div><label>البنك المسحوب عليه</label><input value="${esc(x.bank)}" onchange="draft.rows[${i}].bank=this.value" placeholder="بنك فلسطين"></div>
+      </div>
+    </div>`).join('');
+  } else if(draft.type==='kmb'){
+    box.innerHTML=draft.rows.map((x,i)=>`
+    <div class="sub-card">
+      ${draft.rows.length>1? `<span class="rm" onclick="draft.rows.splice(${i},1);renderRows()">حذف ✖</span>`:''}
+      <div class="row3">
+        <div><label>قيمة الكمبيالة</label><input inputmode="decimal" value="${esc(x.amount)}" onchange="draft.rows[${i}].amount=this.value"></div>
+        <div><label>تاريخ التحرير</label><input value="${esc(x.writeDate)}" onchange="draft.rows[${i}].writeDate=this.value" placeholder="03/11/2022"></div>
+        <div><label>تاريخ الاستحقاق</label><input value="${esc(x.due)}" onchange="draft.rows[${i}].due=this.value" placeholder="26/01/2026"></div>
+      </div>
+    </div>`).join('');
+  }
+}
+function refreshTotals(){
+  const curr=draft.curr||'شيكل';
+  if(draft.type==='chk'){
+    const total=draft.rows.reduce((a,x)=>a+numVal(x.amount),0);
+    const sp=document.getElementById('totalSpan'); if(sp) sp.textContent=fmtNum(total)+' '+curr;
+    draft.totalWords=tafqitCurr(total,curr);
+    const w=document.getElementById('f_totalWords'); if(w) w.value=draft.totalWords;
+  } else {
+    const c=numVal(draft.claimed);
+    draft.claimedWords=c? tafqitCurr(c,curr):'';
+    const w=document.getElementById('f_claimedWords'); if(w) w.value=draft.claimedWords;
+    if(draft.type==='kmb'){
+      const o=numVal(draft.orig);
+      draft.origWords=o? tafqitCurr(o,curr):'';
+      const w2=document.getElementById('f_origWords'); if(w2) w2.value=draft.origWords;
+    }
+  }
+}
+function saveForm(){
+  draft.court2=document.getElementById('f_court2').value.trim();
+  draft.companyId=document.getElementById('f_company').value;
+  if(!draft.debtors.some(d=>d.name.trim())){ toast('⚠️ اكتب اسم المحكوم عليه'); return; }
+  draft.debtors=draft.debtors.filter(d=>d.name.trim());
+  if(draft.type==='chk') draft.rows=draft.rows.filter(x=>x.no||x.amount);
+  if(draft.type==='kmb'){
+    draft.rows=draft.rows.filter(x=>x.amount);
+    if(!draft.rows.length && numVal(draft.claimed)) draft.rows=[{amount:draft.claimed,writeDate:'',due:''}];
+  }
+  if(!draft.id){ draft.id=uid(); db.records.push(draft); }
+  else{ const i=db.records.findIndex(x=>x.id===draft.id); db.records[i]=draft; }
+  save(); toast('✅ انحفظت المعاملة');
+  stack=[{page:'home'},{page:'mahader'},{page:'list',type:draft.type}];
+  view={page:'record',id:draft.id}; render(); window.scrollTo(0,0);
+}
+
+/* ==================== صفحة المعاملة ==================== */
+function vRecord(id,tab){
+  const r=rec(id);
+  if(!r) return crumbs('')+`<div class="empty">المعاملة مش موجودة</div>`;
+  const T=TYPES[r.type], c=db.companies.find(x=>x.id===r.companyId);
+  const total= r.type==='chk'? r.rows.reduce((a,x)=>a+numVal(x.amount),0) : numVal(r.claimed);
+  const tabs=`<div class="tabs" style="display:flex;gap:8px;margin-bottom:14px">
+    ${[['docs','📄 المستندات'],['info','📋 البيانات'],['follow','🕒 المتابعات']].map(([k,n])=>
+      `<div class="tab ${tab===k?'on':''}" onclick="view.tab='${k}';render()" style="flex:1;text-align:center;padding:10px 4px;background:${tab===k?'var(--gold)':'var(--card)'};color:${tab===k?'#1a1405':'var(--muted)'};border:1px solid var(--line);border-radius:10px;font-size:13px;cursor:pointer;font-weight:${tab===k?'bold':'normal'}">${n}</div>`).join('')}
+  </div>`;
+  let body='';
+  if(tab==='docs'){
+    body=`
+    <div class="card-box">
+      <div class="li-title" style="margin-bottom:8px">📄 محضر التنفيذ</div>
+      <p class="muted">بنفس صياغة نماذج المكتب — جاهز للتسليم لدائرة التنفيذ.</p>
+      <div class="btn-row">
+        <button class="btn" onclick="dlMahdar('${r.id}')">⬇️ تحميل Word</button>
+        <button class="btn sec" onclick="prMahdar('${r.id}')">🖨️ طباعة</button>
+      </div>
+    </div>
+    <div class="card-box">
+      <div class="li-title" style="margin-bottom:8px">📜 الوكالة الخاصة</div>
+      <p class="muted">باسم الوكيل العام للشركة وقائمة محامي المكتب — للتصديق والتوقيع.</p>
+      <div class="btn-row">
+        <button class="btn" onclick="dlWakala('${r.id}')">⬇️ تحميل Word</button>
+        <button class="btn sec" onclick="prWakala('${r.id}')">🖨️ طباعة</button>
+      </div>
+    </div>
+    <button class="btn ghost" onclick="openForm('${r.type}','${r.id}')">✏️ تعديل بيانات المعاملة</button>`;
+  }
+  else if(tab==='info'){
+    body=`<div class="card-box">
+      <div class="kv"><span class="k">النوع</span><span class="v">${T.ic} ${T.name}</span></div>
+      <div class="kv"><span class="k">دائرة التنفيذ</span><span class="v">${esc(r.court2||'—')}</span></div>
+      <div class="kv"><span class="k">المحكوم لها</span><span class="v">${esc(c?.name||'—')}</span></div>
+      ${r.debtors.map((d,i)=>`<div class="kv"><span class="k">محكوم عليه ${i+1}</span><span class="v">${esc(d.name)} (${esc(d.id)})</span></div>`).join('')}
+      <div class="kv"><span class="k">المبلغ</span><span class="v" style="color:var(--gold2)">${fmtNum(total)} ${esc(r.curr)}</span></div>
+      ${r.type==='chk'? `<div class="kv"><span class="k">عدد الشيكات</span><span class="v">${r.rows.length}</span></div>`:''}
+      ${r.type==='hkm'? `<div class="kv"><span class="k">الحكم</span><span class="v">${esc(r.caseNo||'—')} — ${esc(r.court||'—')}</span></div>`:''}
+    </div>
+    <div class="card-box">
+      <label>حالة المعاملة</label>
+      <select onchange="rec('${r.id}').status=this.value;save();render();toast('✅ تحدثت الحالة')">
+        ${STATUSES.map(s=>`<option value="${s[0]}" ${r.status===s[0]?'selected':''}>${s[1]}</option>`).join('')}
+      </select>
+    </div>
+    <button class="btn danger" onclick="delRecord('${r.id}')">🗑️ حذف المعاملة نهائياً</button>`;
+  }
+  else{
+    body=`<div class="card-box">
+      <label>متابعة جديدة (شو صار بالمعاملة؟)</label>
+      <textarea id="fu_text" style="min-height:70px" placeholder="مثال: تم فتح الملف بدائرة تنفيذ نابلس برقم .../2026"></textarea>
+      <button class="btn sec" onclick="addFollow('${r.id}')">➕ أضف متابعة</button>
+    </div>
+    ${r.followups.length? r.followups.slice().reverse().map((fu,i)=>{
+      const ri=r.followups.length-1-i;
+      return `<div class="follow-item"><span class="del-x" onclick="rec('${r.id}').followups.splice(${ri},1);save();render()">حذف ✖</span><div class="d">🕒 ${esc(fu.date)}</div><div>${esc(fu.text)}</div></div>`;
+    }).join(''):`<div class="empty"><div class="ic">🕒</div>سجّل كل خطوة بتصير بالمعاملة<br>عشان تضل المتابعة قدامك</div>`}`;
+  }
+  return crumbs(`${T.ic} ${T.name} ← ${esc(r.debtors[0]?.name||'')}`)+`
+  <div class="card-box" style="display:flex;justify-content:space-between;align-items:center">
+    <div><div style="font-weight:bold;font-size:18px">${esc(r.debtors[0]?.name||'')}${r.debtors.length>1? ' <span class="muted">+ '+(r.debtors.length-1)+' آخرين</span>':''}</div>
+    <div class="muted">${T.ic} ${T.name} — 🏛️ ${esc(r.court2||'')} — 💰 ${fmtNum(total)} ${esc(r.curr)}</div></div>
+    <span class="pill ${stCls(r.status)}">${stName(r.status)}</span>
+  </div>`+tabs+body;
+}
+function delRecord(id){
+  if(!confirm('متأكد بدك تحذف المعاملة نهائياً؟')) return;
+  db.records=db.records.filter(x=>x.id!==id); save(); toast('🗑️ انحذفت');
+  view=stack.pop()||{page:'mahader'}; render();
+}
+function addFollow(id){
+  const t=document.getElementById('fu_text').value.trim();
+  if(!t){ toast('⚠️ اكتب المتابعة أول'); return; }
+  rec(id).followups.push({date:today(),text:t}); save(); render(); toast('✅ انضافت');
+}
+
+/* ==================== الشركات ==================== */
+function vCompanies(){
+  return crumbs('🏢 الشركات الموكِّلة')+`
+  <button class="btn" onclick="go({page:'company'})">➕ أضف شركة موكِّلة</button>
+  <div style="height:14px"></div>
+  ${db.companies.map(c=>{
+    const n=db.records.filter(r=>r.companyId===c.id).length;
+    return `<div class="list-item" onclick="go({page:'company',editId:'${c.id}'})">
+      <div class="li-top"><span class="li-title">🏢 ${esc(c.name)}</span><span class="pill st-new">${n} معاملة</span></div>
+      <div class="li-sub"><span>👤 الوكيل العام: ${esc(c.wakilName||'—')}</span><span>📍 ${esc(c.address||'')}</span></div>
+    </div>`;
+  }).join('')}`;
+}
+function vCompany(editId){
+  const c=editId? db.companies.find(x=>x.id===editId):null;
+  return crumbs(c?'تعديل شركة':'شركة موكِّلة جديدة')+`
+  <div class="card-box">
+    <label>اسم الشركة (كما بالسجل الرسمي)</label>
+    <input id="c_name" value="${esc(c?.name||'')}" placeholder="شركة .......... المساهمة العامة المحدودة">
+    <div class="row2">
+      <div><label>رقم التسجيل</label><input id="c_reg" value="${esc(c?.reg||'')}"></div>
+      <div><label>العنوان</label><input id="c_address" value="${esc(c?.address||'')}"></div>
+    </div>
+    <div class="section-title">بيانات الوكالة العامة (للوكالة الخاصة)</div>
+    <div class="row2">
+      <div><label>اسم الوكيل العام عن الشركة</label><input id="c_wakil" value="${esc(c?.wakilName||'')}"></div>
+      <div><label>رقم الوكالة العامة</label><input id="c_wno" value="${esc(c?.wakalaNo||'')}" placeholder="3455/2011"></div>
+    </div>
+    <div class="row2">
+      <div><label>كاتب العدل</label><input id="c_notary" value="${esc(c?.notary||'')}" placeholder="رام الله"></div>
+      <div><label>تاريخ المصادقة</label><input id="c_wdate" value="${esc(c?.wakalaDate||'')}" placeholder="07/03/2011"></div>
+    </div>
+    <label>قائمة المحامين الموكَّلين (بصيغة: فلان و/أو فلان ...)</label>
+    <textarea id="c_lawyers">${esc(c?.lawyers||'')}</textarea>
+  </div>
+  <button class="btn" onclick="saveCompany('${editId||''}')">💾 حفظ</button>
+  ${c? `<button class="btn danger" onclick="delCompany('${c.id}')">🗑️ حذف الشركة</button>`:''}`;
+}
+function saveCompany(editId){
+  const g=id=>document.getElementById(id).value.trim();
+  if(!g('c_name')){ toast('⚠️ اكتب اسم الشركة'); return; }
+  const data={name:g('c_name'),reg:g('c_reg'),address:g('c_address'),wakilName:g('c_wakil'),wakalaNo:g('c_wno'),notary:g('c_notary'),wakalaDate:g('c_wdate'),lawyers:g('c_lawyers')};
+  if(editId) Object.assign(db.companies.find(x=>x.id===editId),data);
+  else db.companies.push(Object.assign({id:uid()},data));
+  save(); toast('✅ انحفظت'); back();
+}
+function delCompany(id){
+  if(!confirm('حذف الشركة؟')) return;
+  db.companies=db.companies.filter(x=>x.id!==id); save(); view={page:'companies'}; render();
+}
+
+/* ==================== الإعدادات ==================== */
+function vSettings(){
+  return crumbs('⚙️ الإعدادات')+`
+  <div class="card-box">
+    <label>اسم وكيل المحكوم لها (ينحط بالمحضر بعد "حضر وكيل المحكوم لها:" — اتركه فاضي إذا بتعبيه بخط اليد)</label>
+    <input id="s_lawyer" value="${esc(db.settings.lawyer||'')}" placeholder="المحامي ...">
+  </div>
+  <button class="btn" onclick="db.settings.lawyer=document.getElementById('s_lawyer').value.trim();save();toast('✅ انحفظت');back()">💾 حفظ</button>`;
+}
+
+/* ==================== نسخ احتياطي ==================== */
+function exportDb(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='قسم-التنفيذ-نسخة-'+today()+'.json';
+  a.click(); toast('⬇️ نزلت النسخة الاحتياطية');
+}
+function importDb(inp){
+  const file=inp.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const d=JSON.parse(r.result); if(!d.records) throw 0; db=d; save(); render(); toast('✅ رجعت البيانات'); }catch(e){ toast('⚠️ الملف مش صالح'); } };
+  r.readAsText(file); inp.value='';
+}
+
+/* ==================== تشغيل ==================== */
+const _origRender=render;
+render=function(){ _origRender(); if(view.page==='form'){ renderDebtors(); renderRows(); refreshTotals(); } };
+render();
+</script>
+</body>
+</html>
